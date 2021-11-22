@@ -1,6 +1,6 @@
 {
   "name": "@berstend/node-safe",
-  "version": "0.3.4",
+  "version": "0.3.6",
   "description": "Use Deno-like permissions with Node.js",
   "repository": "berstend/node-safe",
   "author": "berstend",
