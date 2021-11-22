@@ -7,17 +7,17 @@
 [![npm](https://img.shields.io/npm/v/@berstend/node-safe.svg)](https://www.npmjs.com/package/@berstend/node-safe)
 ![license](https://img.shields.io/npm/l/@berstend/node-safe)
 
+> <sub><sup>_Jump to: [Permissions](#permissions), [Usage](#usage), [Shell integration](#implicit-usage), [Configuration](#configuration), [Project status](#project-status), [Package managers](#package-managers-npm-safe-yarn-safe), [Troubleshooting](#troubleshooting), [Contributing](#contributing)_</sup></sub>
+
 Run Node.js code safely with permissions, preventing rogue dependencies from compromising your system.
 
-`node-safe` is an easy to use companion for your regular `node` and uses native macOS sandboxing features to control file system access (read/write separately), networking and process spawning to keep your workstation safe.
-
-> <sub><sup>_Jump to: [Permissions](#permissions), [Usage](#usage), [Shell integration](#implicit-usage), [Configuration](#configuration), [Project status](#project-status), [Package managers](#package-managers-npm-safe-yarn-safe), [Troubleshooting](#troubleshooting), [Contributing](#contributing)_</sup></sub>
+`node-safe` is an easy to use companion for your regular `node` and uses native macOS sandboxing features to control file system access, networking and process spawning to keep your workstation safe.
 
 ## Motivation
 
-As developers using Node.js and the npm ecosystem we routinely run _a lot_ of untrusted code directly on our workstations.
+As developers using Node.js and npm we routinely run _a lot_ of untrusted code directly on our workstations.
 
-Let this sink in for a moment: **Any npm package you're using has full file system and network access and can exfiltrate your data at will. 😱** We kinda just close our eyes and hope for the best here, which seems to not work anymore:
+Let this sink in: **Any npm package you're using has full file system and network access and can exfiltrate your data at will. 😱** We kinda just close our eyes and hope for the best here, which seems to not work anymore:
 
 - [Popular 'coa' NPM library hijacked to steal user passwords](https://www.bleepingcomputer.com/news/security/popular-coa-npm-library-hijacked-to-steal-user-passwords/)
 - [NPM package ‘ua-parser-js’ with more than 7M weekly downloads is compromised](https://news.ycombinator.com/item?id=28962168)
@@ -48,7 +48,7 @@ Deno (a Node.js alternative/competitor) has a built-in [permission system](#how-
 
 ## Quickstart
 
-> _See [Usage](#usage) below for more ways to install and use `node-safe`. Please note that only macOS is supported currently._
+> _See [Usage](#usage) below for more ways to install and use `node-safe`. Note that only macOS is supported currently._
 
 ```bash
 npm install --global @berstend/node-safe
@@ -137,8 +137,8 @@ node-safe --allow-read-write="[project]/**" --allow-run="[project]/node_modules/
 
 **Elevator pitch:**
 
-- The [permissions](#permissions) will apply to all imported modules, nested dependencies and even spawned/forked child processes. 🔥
-- Permissions can be defined through command line args, environment variables or convenient `.node-safe.json` files.
+- The [permissions](#permissions) will apply to all imports, nested dependencies and even spawned/forked child processes. 🔥
+- Configure permissions with the command line, environment variables or convenient `.node-safe.json` files.
 - You can use `node-safe` instead of `node` or teach your regular `node` command to support sandboxing.
 - Package managers like `npm`, `npx` or `yarn` are supported as well.
 
@@ -147,14 +147,14 @@ node-safe --allow-read-write="[project]/**" --allow-run="[project]/node_modules/
 The main reason why running Node.js code is so risky is the complete lack of restrictions, any npm package (or any of it's often hundreds of nested dependencies from a multitude of developers) has:
 
 - unrestricted file system access
-  - reading files can be used to steal your SSH keys, Bitcoin wallet, grab your 1Password archive or personal photos
-  - writing files can be used to encrypt or destroy important data or in the worst case install persistent rootkits
+  - reading files can be used to steal your SSH keys, Bitcoin wallet, grab your 1Password archive or photos
+  - writing files can be used to encrypt or destroy important data or in the worst case install rootkits
 - unrestricted networking
-  - which makes it easy for bad code to phone home, fetch malware or upload your private data to a remote server
+  - which makes it easy for bad code to phone home, fetch malware or upload your private data to a server
 - unrestricted process spawning
   - is often used as an attack vector to bypass firewalls, execute malware payload or modify system settings
 
-The question arises why we allow our code to run with all these permissions, when in most cases they're not needed.
+The question arises why we allow our code to run with all these permissions, when most often they're not needed.
 
 ### Sandboxing to the rescue
 
@@ -484,7 +484,7 @@ Here's a simple `.node-safe.json`:
 }
 ```
 
-`$schema` and `$readme` are optional, but with the schema you get IntelliSense while typing in editors like VSCode 😍:
+`$schema` and `$readme` are optional, but the schema enables IntelliSense while typing in editors like VSCode 😍:
 
 ![config intellisense](https://i.imgur.com/kBGoIYh.png)
 
@@ -492,9 +492,9 @@ Relative paths in the config file will resolve from the directory containing the
 
 The config file supports three (all optional) top level properties with permissions:
 
-- `node` - Permissions defined here will apply to any node process run in that project (including package managers)
-- `scripts` - Supports defining extra permissions that apply when running package.json scripts
-- `command` - Supports defining extra permissions that apply when running package manager (npm, yarn) commands
+- `node` - Permissions that will apply to any node process run in that project (including package managers)
+- `scripts` - Define extra permissions that apply when running package.json scripts
+- `command` - Define extra permissions that apply when running package manager (npm, yarn) commands
 
 Another example (comments are for explanation purposes only and not valid JSON):
 
@@ -687,7 +687,7 @@ Deno implemented a [permission system](https://deno.land/manual/getting_started/
 
 `node-safe` borrowed it's CLI argument naming heavily from Deno though as to not reinvent the wheel.
 
-One aspect where Deno allows more fine-grained control is networking: It optionally supports a whitelist of domains/IPs, whereas `node-safe` can only enable/disable networking altogether (inbound & outbound separately though).
+One aspect where Deno allows more fine-grained control is networking: It supports a whitelist of domains/IPs, whereas `node-safe` can only enable/disable networking altogether (inbound & outbound separately though).
 
 We also didn't implement an `--allow-env` equivalent to Deno, it's possible but I feel it'd be more annoying than useful.
 
@@ -935,7 +935,7 @@ sandbox-exec -p '(version 1) (debug all) (deny default)' curl https://example.co
 
 ## Contributing
 
-Community involvement is welcome. Please create an issue to discuss what you have in mind before working on a PR. :-)
+Please create an issue to discuss what you have in mind before working on a PR. :-)
 
 ## References
 
