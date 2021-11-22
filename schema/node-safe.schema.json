@@ -1,0 +1,99 @@
+{
+  "title": "JSON schema for node-safe config files",
+  "description": "Configure additional node-safe sandbox permissions through .node-safe.json files.",
+  "$schema": "https://json-schema.org/draft-04/schema#",
+
+  "type": "object",
+  "additionalProperties": false,
+
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "$readme": {
+      "const": "https://github.com/berstend/node-safe#readme",
+      "description": "Learn more about node-safe and this config file"
+    },
+    "node": {
+      "$ref": "#/$defs/permissions",
+      "description": "Additional sandbox permissions for all node based processes (including npm, yarn) invoked through node-safe (in this project).\nIf 'scripts' or 'commands' are defined as well and matching they'll be merged with the 'node' permissions."
+    },
+    "scripts": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/permissions",
+        "description": "Name of the package.json script.\nComma separated lists and '*' are supported (e.g. `*` or `build-*` or `clean,build-dev,build-prod`)."
+      },
+      "description": "Additional sandbox permissions when a package.json script is invoked.\nOnly the initial script invoked is considered during matching (e.g. if `npm run build` runs `npm run clean` internally only `build` will match). Will be deep-merged with the 'node' permissions (if defined)."
+    },
+    "commands": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/permissions",
+        "description": "Name of the package manager command.\nComma separated lists and '*' are supported. If no space is used only the command name will be matched (for portability), otherwise `npm/yarn <command> is used for matching."
+      },
+      "description": "Additional sandbox permissions when a package manager command is invoked.\nOnly the initial command invoked is considered during matching. Will be deep-merged with the 'node' permissions (if defined). If multiple entries match (when using wildcards or comma separated lists) they will be merged as well."
+    }
+  },
+
+  "$defs": {
+    "permissions": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "allow-read": {
+          "$ref": "#/$defs/booleanOrString",
+          "description": "Allow file system read access. You can specify an optional, comma-separated list of directories or files to provide an allow-list of allowed file system access. Wildcard globs are supported."
+        },
+        "allow-write": {
+          "$ref": "#/$defs/booleanOrString",
+          "description": "Allow file system write access. You can specify an optional, comma-separated list of directories or files to provide an allow-list of allowed file system access. Wildcard globs are supported."
+        },
+        "allow-read-write": {
+          "$ref": "#/$defs/booleanOrString",
+          "description": "Allow file system read & write access. You can specify an optional, comma-separated list of directories or files to provide an allow-list of allowed file system access. Wildcard globs are supported."
+        },
+        "allow-run": {
+          "$ref": "#/$defs/booleanOrString",
+          "description": "Allow running subprocesses. You can specify an optional, comma-separated list of subprocesses to provide an allow-list of allowed subprocesses. Wildcard globs are supported. Be aware that subprocesses are subject to the same permissions as the Node.js app and file system or network access needs to be permitted for subprocesses as well."
+        },
+        "allow-net": {
+          "type": ["boolean"],
+          "description": "Allow unrestricted network access (inbound & outbound)."
+        },
+        "allow-net-inbound": {
+          "type": ["boolean"],
+          "description": "Allow inbound network access. Allows binding to sockets and creating/listening local servers. Local network requests are not permitted."
+        },
+        "allow-net-outbound": {
+          "type": ["boolean"],
+          "description": "Allow outbound network access. Allows binding to sockets and outgoing requests to the local network and internet."
+        },
+        "allow-all": {
+          "type": ["boolean"],
+          "description": "Allow all permissions. This enables all security sensitive functions. Use with caution."
+        },
+        "allow-unsupported-platforms": {
+          "type": ["boolean"],
+          "description": "Running `node-safe` on an unsupported platform (Windows, Linux) will show an error by default, when this option is set sandboxing will be skipped and node executed normally"
+        },
+        "disable-sandbox-hints": {
+          "type": ["boolean"],
+          "description": "By default `node-safe` will print a short message to stdout to let you know it's running (only in interactive terminals, not when piping the output or similar)"
+        },
+        "debug-sandbox": {
+          "type": ["boolean"],
+          "description": "Enable verbose debug logging to stdout"
+        },
+        "sandbox-target": {
+          "type": ["boolean"],
+          "description": "Specify a different target binary to be sandboxed (by default `node`)"
+        }
+      }
+    },
+
+    "booleanOrString": {
+      "type": ["boolean", "string"]
+    }
+  }
+}

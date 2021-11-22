@@ -1,0 +1,82 @@
+; Default node-safe macOS sandbox instructions (hand-crafted after lots of testing)
+(version 1)
+(debug all)
+
+; Deny everything by default
+(deny default)
+
+; Allow reading file/folder meta data
+; doing this selectively is messy and there's no real risk allowing it
+(allow file-read-metadata)
+
+; Allow read access to standard system paths
+(allow file-read*
+    (require-all (file-mode #o0004)
+    (require-any (subpath "/Library/Filesystems/NetFSPlugins")
+    (subpath "/Library/Apple/System")
+    (subpath "/Library/Preferences/Logging")
+    (subpath "/System")
+    (subpath "/private/var/db/timezone")
+    (subpath "/usr/lib")
+    (subpath "/usr/share")
+  ))
+)
+
+; Allow access to standard special files.
+(allow file-read*
+    (literal "/dev/autofs_nowait")
+    (literal "/dev/random")
+    (literal "/dev/urandom")
+    (literal "/dev/")
+    (literal "/private/etc/master.passwd")
+    (literal "/private/etc/passwd")
+)
+
+(allow file-read* file-write-data
+    (literal "/dev/null")
+    (literal "/dev/zero")
+)
+
+; This is not strictly necessary but pollutes the logs otherwise
+(allow file-read*
+       file-write-data
+       file-ioctl
+    (require-all
+        (literal "/dev/dtracehelper")
+    )
+)
+
+; Read-only preferences and data
+(allow file-read*
+    ;; Basic system paths
+    (subpath "/Library/Dictionaries")
+    (subpath "/Library/Fonts")
+    (subpath "/Library/Frameworks")
+    (subpath "/Library/Managed Preferences")
+    (subpath "/Library/Speech/Synthesizers")
+    (subpath "/Library/Audio")
+    (regex #"^/private/etc/(group|passwd)$")
+
+    ;; System and user preferences
+    (regex #"^/Users/[^.]+/.CFUserTextEncoding")
+    (regex #"^/Users/[^.]+/Library/Dictionaries")
+)
+
+; Allow TTY access - I don't think there's a risk allowing it and otherwise the REPL won't work?
+(allow file-ioctl
+  (regex #"^/dev/tty(.*)")
+)
+
+; Required: node/v8 needs to be able to read certain sysctl values (uv_cwd syscall, etc)
+; We could be more selective here but I see no harm in reading sysctl values
+(allow sysctl-read)
+
+; https://bugzilla.mozilla.org/show_bug.cgi?id=1546544
+(allow sysctl-write
+  (sysctl-name "kern.tcsm_enable")
+)
+
+; Allow the app to send signals
+; I'm not sure if we should move this into the `--allow-run` block though
+(allow signal)
+

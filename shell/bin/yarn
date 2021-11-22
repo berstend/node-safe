@@ -1,0 +1,93 @@
+#!/usr/bin/env bash
+# This is a pseudo yarn binary courtesy of node-safe
+# https://github.com/berstend/node-safe#readme
+
+ALREADY_INVOKED="$NODE_SAFE_INVOKED"
+export NODE_SAFE_INVOKED=true
+export NODE_SAFE_IMPLICIT_LAUNCH=true
+export NODE_SAFE_PRODUCT="yarn"
+export NODE_SAFE_BIN_DIR="/Users/endzeit/dev/os/node-safe/shell/bin"
+
+[[ -n "$NODE_SAFE_DEBUG_SANDBOX" ]] && echo "node-safe (shell): shim for yarn called (dir: ${NODE_SAFE_BIN_DIR})"
+
+# Helper: Fast way to find the path to the real node binary by checking the other /Users/endzeit/.nvm/versions/node/v16.13.0/bin:/Users/endzeit/.yarn/bin:/Users/endzeit/.config/yarn/global/node_modules/.bin:/Users/endzeit/.zplugin/plugins/junegunn---fzf-bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/X11/bin:/Library/Frameworks/Mono.framework/Versions/Current/Commands:/Users/endzeit/.cargo/bin entries
+get_vanilla_node_from_path() (
+  local ignoreDir="$1"
+  while IFS=: read -d: -r path; do
+    # Ignore this very directory in case it's found in the PATH
+    if [[ "$path" == "$ignoreDir" ]]; then
+      continue
+    fi
+    # Test each directory in the path for a node binary
+    if [[ -f "$path/node" ]]; then
+        echo "$path/node"
+        break
+    fi
+  done <<< "${PATH:+"${PATH}:"}"
+)
+
+# Helper: Fast way to derive the path to other global node_module binaries from the node path
+get_vanilla_product_path() (
+  local str="$1"
+local old="bin/node"
+local new="bin/${2}"
+echo ${str/$old/$new}
+)
+
+# Find the path to the vanilla node binary
+if [[ -z "$NODE_SAFE_VANILLA_NODE_PATH" ]]; then
+  # nvm can change the path of the node binary om the fly, hence it takes precedence if set
+  [[ -n "$NVM_BIN" ]] && NODE_SAFE_VANILLA_NODE_PATH="$NVM_BIN/node"
+fi
+if [[ -z "$NODE_SAFE_VANILLA_NODE_PATH" ]]; then
+  # get the vanilla node from the other PATH entries, ignoring our own directory
+  NODE_SAFE_VANILLA_NODE_PATH="$(get_vanilla_node_from_path $NODE_SAFE_BIN_DIR)"
+fi
+if [[ -z "$NODE_SAFE_VANILLA_NODE_PATH" ]]; then
+  echo "Unable to find the real node binary. :-("
+  echo "If you're certain node is installed correctly please report this issue: https://github.com/berstend/node-safe/issues"
+  echo "In the meantime (apologies for the inconvenience) disable shell integration at /Users/endzeit/dev/os/node-safe/shell"
+  exit 1
+fi
+export NODE_SAFE_VANILLA_NODE_PATH="$NODE_SAFE_VANILLA_NODE_PATH"
+
+# Derive other paths from the vanilla node path
+export NODE_SAFE_VANILLA_PRODUCT_PATH="$(get_vanilla_product_path $NODE_SAFE_VANILLA_NODE_PATH $NODE_SAFE_PRODUCT)"
+export NODE_SAFE_PATH="$(get_vanilla_product_path $NODE_SAFE_VANILLA_NODE_PATH node-safe)"
+
+# We only need to sandbox a given invocation once
+if [[ -n "$ALREADY_INVOKED" ]]; then
+  [[ -n "$NODE_SAFE_DEBUG_SANDBOX" ]] && echo "node-safe (shell): skipping sandbox for \NODE_SAFE_PRODUCT (we're already sandboxed)"
+  [[ "$NODE_SAFE_VANILLA_NODE_PATH" != "$NODE_SAFE_VANILLA_PRODUCT_PATH" ]] && exec $NODE_SAFE_VANILLA_NODE_PATH $NODE_SAFE_VANILLA_PRODUCT_PATH "$@"
+  [[ "$NODE_SAFE_VANILLA_NODE_PATH" == "$NODE_SAFE_VANILLA_PRODUCT_PATH" ]] && exec $NODE_SAFE_VANILLA_NODE_PATH "$@"
+fi
+
+# Check if the node-safe binary exists
+if [ ! -f $NODE_SAFE_PATH ]; then
+  # Install node-safe globally if missing for ultimate convenience (can happen when nvm switches node versions)
+  VANILLA_NPM_PATH="$(get_vanilla_product_path $NODE_SAFE_VANILLA_NODE_PATH npm)"
+  echo "node-safe not found (checked at: $NODE_SAFE_PATH)"
+  echo "running $VANILLA_NPM_PATH install --global @berstend/node-safe"
+  $NODE_SAFE_VANILLA_NODE_PATH $VANILLA_NPM_PATH install --global @berstend/node-safe
+fi
+if [ ! -f $NODE_SAFE_PATH ]; then
+  echo "Apologies, unable to find or install node-safe. :-("
+  echo "We're expecting it to be here but it's not: $NODE_SAFE_PATH "
+  echo "Please report this issue: https://github.com/berstend/node-safe/issues"
+  echo "For the time being disable shell integration at /Users/endzeit/dev/os/node-safe/shell"
+  exit 1
+fi
+
+# Check if this has been invoked by running a -safe command and we're used as an interpreter
+# The -safe commands use  so we can save an extra hop here
+# My bash skills are not good enough to use the product array here lol
+if [[ "$NODE_SAFE_PRODUCT" == "node" && -n "$1" ]]; then
+  [[ -n "$NODE_SAFE_DEBUG_SANDBOX" ]] && echo "node-safe (shell): invoking $NODE_SAFE_VANILLA_NODE_PATH $@"
+  if [[ "$1" == *"bin/node-safe"* || "$1" == *"bin/npm-safe"*  || "$1" == *"bin/npx-safe"* || "$1" == *"bin/yarn-safe"* ]]; then
+    exec $NODE_SAFE_VANILLA_NODE_PATH "$@"
+  fi
+fi
+
+# Replace this session with node-safe
+[[ -n "$NODE_SAFE_DEBUG_SANDBOX" ]] && echo "node-safe (shell): invoking $NODE_SAFE_VANILLA_NODE_PATH $NODE_SAFE_PATH $@"
+exec $NODE_SAFE_VANILLA_NODE_PATH $NODE_SAFE_PATH "$@"

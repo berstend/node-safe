@@ -1,0 +1,4 @@
+#!/usr/bin/env node
+
+process.env.NODE_SAFE_PRODUCT = "yarn"
+require('../src/cli')()

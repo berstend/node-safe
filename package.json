@@ -1,0 +1,38 @@
+{
+  "name": "@berstend/node-safe",
+  "version": "0.3.4",
+  "description": "Use Deno-like permissions with Node.js",
+  "repository": "berstend/node-safe",
+  "author": "berstend",
+  "main": "./src/cli.js",
+  "license": "MIT",
+  "bin": {
+    "node-safe": "./bin/node-safe",
+    "npm-safe": "./bin/npm-safe",
+    "npx-safe": "./bin/npx-safe",
+    "yarn-safe": "./bin/yarn-safe"
+  },
+  "files": [
+    "bin",
+    "schema",
+    "src"
+  ],
+  "engines": {
+    "node": ">= v14"
+  },
+  "keywords": [
+    "node-safe",
+    "security",
+    "sandbox",
+    "node",
+    "tooling",
+    "yarn",
+    "npm",
+    "yarn-safe",
+    "npm-safe",
+    "npx-safe",
+    "yarn",
+    "npm",
+    "npx"
+  ]
+}

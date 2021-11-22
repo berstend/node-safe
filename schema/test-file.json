@@ -1,0 +1,19 @@
+{
+  "$schema": "./node-safe.schema.json",
+  "$readme": "https://github.com/berstend/node-safe#readme",
+
+  "node": {
+    "allow-read": "./data/**"
+  },
+
+  "scripts": {
+    "foobar": {}
+  },
+
+  "commands": {
+    "whoami": {
+      "allow-read": "./foo/**",
+      "allow-net-inbound": true
+    }
+  }
+}

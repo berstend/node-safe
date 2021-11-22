@@ -1,0 +1,4 @@
+#!/usr/bin/env node
+
+process.env.NODE_SAFE_PRODUCT = "npx"
+require('../src/cli')()

@@ -1,0 +1,4 @@
+#!/usr/bin/env node
+
+process.env.NODE_SAFE_PRODUCT = process.env.NODE_SAFE_PRODUCT || "node"
+require('../src/cli')()
