@@ -140,6 +140,7 @@ node-safe --allow-read-write="[project]/**" --allow-run="[project]/node_modules/
 - Configure permissions with the command line, environment variables or convenient `.node-safe.json` files.
 - You can use `node-safe` instead of `node` or teach your regular `node` command to support sandboxing.
 - Package managers like `npm`, `npx` or `yarn` are supported as well.
+- `node-safe` is a light-weight wrapper that uses your existing `node` version.
 
 ## How it works
 
