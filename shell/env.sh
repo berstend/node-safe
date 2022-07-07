@@ -71,7 +71,7 @@ get_vanilla_product_path() (
 if [[ -z "\$NODE_SAFE_VANILLA_NODE_PATH" ]]; then
   # nvm can change the path of the node binary om the fly, hence it takes precedence if set
   [[ -n "\$NVM_BIN" ]] && NODE_SAFE_VANILLA_NODE_PATH="\$NVM_BIN/node"
-  if [[ -n "\$ASDF_DIR" ]]; then
+  if command -v asdf > /dev/null && [[ -n "\$ASDF_DIR" ]]; then
     [[ -n "\$NODE_SAFE_DEBUG_SANDBOX" ]] && echo "node-safe (shell): getting node path from asdf"
     NODE_SAFE_VANILLA_NODE_PATH="\$(asdf which node)"
   fi
@@ -141,7 +141,7 @@ do
 done
 
 # Store reference to the original node binary for faster lookups later
-if [[ -n "$ASDF_DIR" ]]; then
+if command -v asdf > /dev/null && [[ -n "$ASDF_DIR" ]]; then
   NODE_SAFE_VANILLA_NODE_PATH=$(asdf which node)
 else
   NODE_SAFE_VANILLA_NODE_PATH=$(which node)
