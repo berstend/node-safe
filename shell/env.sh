@@ -71,6 +71,10 @@ get_vanilla_product_path() (
 if [[ -z "\$NODE_SAFE_VANILLA_NODE_PATH" ]]; then
   # nvm can change the path of the node binary om the fly, hence it takes precedence if set
   [[ -n "\$NVM_BIN" ]] && NODE_SAFE_VANILLA_NODE_PATH="\$NVM_BIN/node"
+  if command -v asdf > /dev/null && [[ -n "\$ASDF_DIR" ]]; then
+    [[ -n "\$NODE_SAFE_DEBUG_SANDBOX" ]] && echo "node-safe (shell): getting node path from asdf"
+    NODE_SAFE_VANILLA_NODE_PATH="\$(asdf which node)"
+  fi
 fi
 if [[ -z "\$NODE_SAFE_VANILLA_NODE_PATH" ]]; then
   # get the vanilla node from the other PATH entries, ignoring our own directory
@@ -137,7 +141,12 @@ do
 done
 
 # Store reference to the original node binary for faster lookups later
-export NODE_SAFE_VANILLA_NODE_PATH=$(which node)
+if command -v asdf > /dev/null && [[ -n "$ASDF_DIR" ]]; then
+  NODE_SAFE_VANILLA_NODE_PATH=$(asdf which node)
+else
+  NODE_SAFE_VANILLA_NODE_PATH=$(which node)
+fi
+export NODE_SAFE_VANILLA_NODE_PATH
 [[ -z "$NODE_SAFE_DIR" ]] && export NODE_SAFE_DIR="$CURRENT_DIR"
 
 # Prepend the path with our bin directory so we get called when e.g. node is executed
