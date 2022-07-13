@@ -347,7 +347,7 @@ To disable the shell integration just remove the line we added earlier and resta
 
 #### Use a config file
 
-I recommend using a `.node-safe.json` [config file](#config-file) when working on projects. You don't need to remember to use commandline arguments and your team members get to enjoy the sandboxing permissions you've created as well.
+I recommend using a `node-safe.json` [config file](#config-file) when working on projects. You don't need to remember to use commandline arguments and your team members get to enjoy the sandboxing permissions you've created as well.
 
 Adding a config file to your project also allows you to add this cool badge to your readme 😄
 
