@@ -3,7 +3,36 @@
 
 const tty = require("tty")
 const os = require("os")
+
+// From: https://github.com/sindresorhus/has-flag/blob/main/index.js
+/// function hasFlag(flag, argv = globalThis.Deno?.args ?? process.argv) {
+function hasFlag(flag, argv = globalThis.Deno ? globalThis.Deno.args : process.argv) {
+  const prefix = flag.startsWith('-') ? '' : (flag.length === 1 ? '-' : '--');
+  const position = argv.indexOf(prefix + flag);
+  const terminatorPosition = argv.indexOf('--');
+  return position !== -1 && (terminatorPosition === -1 || position < terminatorPosition);
+}
+
 const { env } = process
+
+let flagForceColor
+
+if (
+  hasFlag('no-color')
+  || hasFlag('no-colors')
+  || hasFlag('color=false')
+  || hasFlag('color=never')
+) {
+  flagForceColor = 0
+} 
+else if (
+  hasFlag('color')
+  || hasFlag('colors')
+  || hasFlag('color=true')
+  || hasFlag('color=always')
+) {
+  flagForceColor = 1
+}
 
 function translateLevel(level) {
   if (level === 0) {
